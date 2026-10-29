@@ -7,12 +7,13 @@ const cors = e => ({"access-control-allow-origin": e.ALLOW_ORIGIN || "*", "acces
 const json = (e, o, s = 200) => new Response(JSON.stringify(o), {status: s, headers: {"content-type": "application/json", ...cors(e)}});
 
 async function llm(e, system, user) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {method: "POST",
-    headers: {"x-api-key": e.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-    body: JSON.stringify({model: e.MODEL, max_tokens: 900, system, messages: [{role: "user", content: user}]})});
+  const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {method: "POST",
+    headers: {"authorization": `Bearer ${e.GROQ_API_KEY}`, "content-type": "application/json"},
+    body: JSON.stringify({model: e.MODEL, temperature: 0.2, max_tokens: 900,
+      response_format: {type: "json_object"},
+      messages: [{role: "system", content: system}, {role: "user", content: user}]})});
   const j = await r.json();
-  const t = (j.content || []).map(c => c.text || "").join("");
-  return JSON.parse(t.replace(/```json|```/g, "").trim());
+  return JSON.parse(j.choices?.[0]?.message?.content || "{}");
 }
 const twice = async fn => { for (let i = 0; i < 2; i++) { try { const r = await fn(); if (r) return r; } catch (_) {} } return null; };
 
