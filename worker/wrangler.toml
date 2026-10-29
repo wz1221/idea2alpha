@@ -1,0 +1,10 @@
+name = "idea2alpha-ai"
+main = "index.js"
+compatibility_date = "2025-01-01"
+[vars]
+MODEL = "claude-sonnet-5-5"
+ALLOW_ORIGIN = "*"   # 上線後改成你的網站網址
+# wrangler kv namespace create CACHE → 填入 id；wrangler secret put ANTHROPIC_API_KEY
+[[kv_namespaces]]
+binding = "CACHE"
+id = "REPLACE_ME"

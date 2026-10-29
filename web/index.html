@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>眼光實驗室 Idea2Alpha</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f5f2;--sf:#fff;--tx:#17211c;--mu:#5d6b63;--ln:#d5ddd7;--ac:#1d6b55;--ac2:#b4452f;--gn:#2e8b57;--yl:#d9a21b;--rd:#c0392b}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#111815;--sf:#1a2420;--tx:#e6eee9;--mu:#93a39a;--ln:#2e3b35;--ac:#5fc4a1;--ac2:#f08a72}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.65 "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+header{padding:16px 16px 0;max-width:880px;margin:auto}
+h1{font:700 22px/1.3 "Noto Serif TC","Songti TC",serif;margin:0}
+h1 small{display:block;font:400 13px sans-serif;color:var(--mu);margin-top:2px}
+nav{display:flex;gap:4px;overflow-x:auto;padding:12px 16px;max-width:880px;margin:auto}
+nav button{flex:none;border:1px solid var(--ln);background:var(--sf);color:var(--mu);padding:6px 12px;border-radius:6px;font:inherit;font-size:13px;cursor:pointer}
+nav button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:880px;margin:auto;padding:0 16px 24px}
+section{display:none}section.on{display:block}
+.box{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:14px;margin:0 0 12px}
+h2{font:700 17px serif;margin:0 0 8px}h3{font-size:14px;margin:12px 0 4px}
+textarea,input[type=text],input[type=number],select{width:100%;font:inherit;padding:8px;border:1px solid var(--ln);border-radius:6px;background:var(--bg);color:var(--tx)}
+button.p{background:var(--ac);color:#fff;border:0;padding:9px 16px;border-radius:6px;font:inherit;cursor:pointer}
+button.g{background:none;border:1px solid var(--ln);color:var(--tx);padding:5px 10px;border-radius:6px;font:inherit;font-size:13px;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--ac2);outline-offset:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ac);border-radius:16px;padding:3px 6px 3px 12px;margin:3px 4px 3px 0;font-size:13px}
+.chip input{width:64px;padding:2px 4px}.chip b{cursor:pointer;color:var(--ac2);padding:0 6px}
+.mu{color:var(--mu);font-size:13px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ex{border:1px dashed var(--ln);background:none;color:var(--tx);border-radius:6px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--ln)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.cl{cursor:pointer}tr.cl:hover{background:var(--bg)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle}
+.bar{height:6px;background:var(--ln);border-radius:3px;min-width:50px}.bar i{display:block;height:100%;background:var(--ac);border-radius:3px}
+pre{background:var(--bg);padding:10px;border-radius:6px;overflow-x:auto;font-size:12px;margin:6px 0}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:620px){.cols{grid-template-columns:1fr}}
+.bull{border-left:3px solid var(--gn);padding-left:10px}.bear{border-left:3px solid var(--rd);padding-left:10px}
+.sc{overflow-x:auto}svg{max-width:100%;height:auto}
+.warn{color:var(--ac2)}
+footer{max-width:880px;margin:auto;padding:0 16px 20px;font-size:12px;color:var(--mu)}
+</style></head><body>
+<header><h1>眼光實驗室 Idea2Alpha<small id="src">用一句話說出想法，驗證你的眼光準不準。示範資料為模擬產生，非真實行情。</small></h1></header>
+<nav id="nav"></nav>
+<main>
+<section id="s1"><div class="box"><h2>說出你的想法</h2>
+<textarea id="idea" rows="3" placeholder="例如：營收成長又有法人連買，而且不要下檔風險太高的"></textarea>
+<div class="row" style="margin-top:8px"><button class="p" id="go">轉成條件</button></div>
+<h3>範例想法</h3><div id="exs"></div></div>
+<div id="amb"></div><div id="msg" class="mu"></div></section>
+
+<section id="s2"><div class="box"><h2>條件編輯</h2><div id="chips"></div>
+<div class="row" style="margin-top:6px"><select id="addf" style="width:auto"></select><button class="g" id="addb">新增條件</button></div>
+<div id="warn" class="warn mu"></div></div>
+<div class="box"><h2>策略庫（可複選）</h2><div id="lib"></div>
+<h3>組合方式</h3><div class="row"><select id="mode" style="width:auto"><option value="all">全部符合（AND）</option><option value="any">任一符合（OR）</option><option value="vote">至少 K 個（投票）</option></select>
+<label id="kw" class="mu" style="display:none">K = <input type="number" id="k" value="2" min="1" style="width:60px"></label>
+<select id="cyc" style="width:auto"><option>短線（評估 5／10／20 日）</option><option selected>波段（評估 20／40／60 日）</option><option>長線（評估 60／120／250 日）</option></select></div>
+<p class="mu" id="live"></p><div id="conf" class="warn mu"></div>
+<button class="p" onclick="go(3)">看符合的股票</button></div></section>
+
+<section id="s3"><div class="box"><h2>符合你的條件</h2><p class="mu" id="sum"></p><div class="sc"><table id="res"></table></div></div></section>
+<section id="s4"><div id="detail" class="mu">請先在「符合清單」點選一檔股票。</div></section>
+<section id="s5"><div id="val" class="mu"></div></section>
+<section id="s6"><div class="box"><h2>策略競技場</h2><p class="mu">23 個策略中先放入 8 個示範策略，加上你的組合，同場對照「等權重全體（0050 代理）」。</p><div class="sc"><table id="arena"></table></div></div></section>
+<section id="s7"><div class="box"><h2>我的眼光成績單</h2><p class="mu">預言卡鎖定後不可修改。示範版用模擬資料「快轉 20 日」揭曉。</p><div id="cards"></div></div></section>
+</main>
+<footer>本工具為教育與研究用途，內容不構成投資建議；歷史回測不代表未來績效。</footer>
+<script src="config.js"></script>
+<script>
+const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(20261029),gs=()=>Math.sqrt(-2*Math.log(R()||1e-9))*Math.cos(6.2832*R());
+const F={rev:{n:"近 3 月營收年增率",u:"%",g:()=>R()*70-10},inst:{n:"投信或外資連買天數",u:"日",g:()=>Math.floor(R()*7)},
+var5:{n:"下檔風險排名（越高越危險）",u:"",g:()=>R()},pe:{n:"本益比",u:"倍",g:()=>5+R()*30},roe:{n:"ROE",u:"%",g:()=>R()*28},
+mom:{n:"12-1 月動能百分位",u:"",g:()=>R()},ma:{n:"均線多頭排列（1=是）",u:"",g:()=>R()<.4?1:0},
+mg:{n:"10 日融資變動",u:"%",g:()=>R()*20-10},nh:{n:"距 52 週高點",u:"%",g:()=>R()*30},yld:{n:"現金殖利率",u:"%",g:()=>R()*8}};
+const CFG=window.I2A_CONFIG||{DATA_URL:"data/latest.json",WORKER:""};const FK=Object.keys(F);let NS=50,NP=36;const CST=.00785;
+const D=[];for(let p=0;p<=NP;p++){D.push([]);for(let s=0;s<NS;s++){const x={s};FK.forEach(k=>x[k]=F[k].g());
+x.fwd=.004+.0004*(x.rev-15)+.003*(x.inst>=3)+.012*(x.mom-.5)-.005*(x.var5>.8)+.0008*(x.roe-12)*.3+.05*gs()*.9;D[p].push(x)}}
+let NOW=D[NP],NAMES=null,REAL=false;const NAME=s=>NAMES?NAMES[s]:"示範股 "+String.fromCharCode(65+s%26)+String(Math.floor(s/26)+1).padStart(2,"0");
+const LIB=[["V1","葛拉漢式價值",[["pe","<=",15],["roe",">=",10]]],["G2","營收動能",[["rev",">",20],["nh","<=",10]]],["Q1","品質股",[["roe",">=",15],["var5","<",.8]]],
+["Q2","高股息",[["yld",">=",5]]],["T5","均線多頭＋動能",[["ma","==",1],["mom",">=",.6]]],["T3","接近 52 週新高",[["nh","<=",5]]],["C1","法人連買",[["inst",">=",3]]],["L1","融資退潮反彈",[["mg","<",0],["inst",">=",3]]]]
+.map(([id,name,r])=>({id,name,rules:r.map(([f,op,v])=>({f,op,v}))}));
+const S={rules:[],strat:new Set(),cards:[],sel:null,vcache:null};
+const rOK=(r,x)=>{const a=x[r.f];return r.op==">"?a>r.v:r.op==">="?a>=r.v:r.op=="<"?a<r.v:r.op=="<="?a<=r.v:a==r.v};
+const sOK=(rs,x)=>rs.every(r=>rOK(r,x));
+const lab=r=>F[r.f].n+" "+(r.f=="ma"?"= 是":r.op+" "+(+r.v.toFixed(2))+F[r.f].u);
+const groups=()=>{const g=[];if(S.rules.length)g.push({id:"我的條件",name:"我的條件",rules:S.rules});S.strat.forEach(i=>g.push(LIB.find(l=>l.id==i)));return g};
+const hits=(g,x)=>g.filter(a=>sOK(a.rules,x)).length;
+function mk(g){const m=$("#mode").value,k=+$("#k").value||1;return x=>{if(!g.length)return false;const h=hits(g,x);return m=="all"?h==g.length:m=="any"?h>0:h>=Math.min(k,g.length)}}
+// nav
+const T=["1 想法","2 條件","3 符合清單","4 個股","5 驗證","6 競技場","7 成績單"];
+$("#nav").innerHTML=T.map((t,i)=>`<button data-i="${i+1}">${t}</button>`).join("");
+$("#nav").onclick=e=>{const i=e.target.dataset.i;if(i)go(+i)};
+function go(n){document.querySelectorAll("section").forEach((s,i)=>s.classList.toggle("on",i+1==n));
+document.querySelectorAll("nav button").forEach((b,i)=>b.classList.toggle("on",i+1==n));
+({2:r2,3:r3,4:r4,5:r5,6:r6,7:r7})[n]?.();window.scrollTo(0,0)}
+// M1
+const EX=["營收成長又有法人連買，不要下檔風險太高","我想找便宜又有成長的","強勢股，均線多頭而且接近新高","習慣看融資退場才進場，要有法人買","存股：高殖利率、品質好、風險低"];
+$("#exs").innerHTML=EX.map(e=>`<button class="ex">${e}</button> `).join("");
+$("#exs").onclick=e=>{if(e.target.className=="ex"){$("#idea").value=e.target.textContent;parse()}};
+$("#go").onclick=parse;
+const MAP=[[/營收|成長/,{f:"rev",op:">",v:20}],[/外資|法人|投信|籌碼/,{f:"inst",op:">=",v:3}],[/融資/,{f:"mg",op:"<",v:0}],[/均線|多頭|趨勢/,{f:"ma",op:"==",v:1}],
+[/風險|穩|下檔/,{f:"var5",op:"<",v:.8}],[/股息|殖利率|存股/,{f:"yld",op:">=",v:5}],[/ROE|品質|獲利/,{f:"roe",op:">=",v:15}],[/新高|高點|突破/,{f:"nh",op:"<=",v:5}]];
+const AMB=[[/便宜|低估/,"便宜","pe","<=",[12,15,20],"本益比"],[/強勢|動能/,"強勢","mom",">=",[.9,.8,.7],"動能百分位"]];
+async function parse(){const t=$("#idea").value,rs=[];
+if(CFG.WORKER&&t){try{const j=await(await fetch(CFG.WORKER+"/translate",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({text:t})})).json();
+if(j.rules&&j.rules.length){S.rules=j.rules;$("#amb").innerHTML="";$("#msg").textContent="AI 已翻成條件（通過字典與範圍驗證）。";go(2);return}}catch(e){}}MAP.forEach(([re,r])=>{if(re.test(t))rs.push({...r})});S.rules=rs;
+let h="";AMB.forEach(([re,w,f,op,vs,nm],i)=>{if(re.test(t))h+=`<div class="box"><b>「${w}」有不同定義，請挑一個：</b><div class="row" style="margin-top:6px">${vs.map(v=>`<button class="g" data-a="${i}" data-v="${v}">${nm} ${op} ${v}</button>`).join("")}</div></div>`});
+$("#amb").innerHTML=h;
+if(!rs.length&&!h){$("#msg").textContent="沒有對應到因子字典內的條件。試試「營收」「法人」「均線」「殖利率」「風險」等詞，或直接到下一步手動新增。"}
+else{$("#msg").textContent="已轉成白名單內的因子條件（AI 只負責翻譯，數字由程式篩選）。";if(!h)go(2)}}
+$("#amb").onclick=e=>{const a=e.target.dataset.a;if(a==null)return;const [,,f,op]=AMB[a];S.rules.push({f,op,v:+e.target.dataset.v});e.target.closest(".box").remove();if(!$("#amb").children.length)go(2)};
+// M2
+$("#addf").innerHTML=FK.map(k=>`<option value="${k}">${F[k].n}</option>`).join("");
+const DEF={rev:[">",20],inst:[">=",3],var5:["<",.8],pe:["<=",15],roe:[">=",15],mom:[">=",.8],ma:["==",1],mg:["<",0],nh:["<=",5],yld:[">=",5]};
+$("#addb").onclick=()=>{const f=$("#addf").value;S.rules.push({f,op:DEF[f][0],v:DEF[f][1]});r2()};
+$("#mode").onchange=()=>{$("#kw").style.display=$("#mode").value=="vote"?"":"none";r2()};$("#k").oninput=r2;
+function r2(){$("#chips").innerHTML=S.rules.length?S.rules.map((r,i)=>`<span class="chip">${F[r.f].n} ${r.f=="ma"?"= 是":r.op+` <input type="number" step="any" value="${r.v}" data-i="${i}">`+F[r.f].u}<b data-d="${i}" title="刪除">×</b></span>`).join(""):'<span class="mu">尚無條件，可新增或勾選策略。</span>';
+$("#lib").innerHTML=LIB.map(l=>`<label style="display:block"><input type="checkbox" data-s="${l.id}" ${S.strat.has(l.id)?"checked":""}> <b>${l.id}</b> ${l.name} <span class="mu">單獨命中 ${NOW.filter(x=>sOK(l.rules,x)).length} 檔｜${l.rules.map(lab).join("、")}</span></label>`).join("");
+const g=groups(),m=mk(g),n=NOW.filter(m).length;
+$("#live").textContent=`目前符合 ${n} 檔（共 ${NOW.length} 檔股票池）`;
+$("#warn").textContent=S.rules.length>5?"條件超過 5 個，過度擬合風險升高。":"";
+$("#conf").textContent=($("#mode").value=="all"&&g.length>1&&n<3)?"全部符合只剩不到 3 檔，建議放寬或改用「至少 K 個」投票。":(S.strat.has("Q2")&&S.strat.has("G2")?"Q2 高股息與 G2 營收動能常常互斥，組合後可能選不到股票。":"")}
+$("#chips").onclick=e=>{const d=e.target.dataset.d;if(d!=null){S.rules.splice(+d,1);r2()}};
+$("#chips").oninput=e=>{const i=e.target.dataset.i;if(i!=null&&e.target.value!==""){S.rules[+i].v=+e.target.value;liveOnly()}};
+function liveOnly(){const m=mk(groups());$("#live").textContent=`目前符合 ${NOW.filter(m).length} 檔（共 ${NOW.length} 檔股票池）`}
+$("#lib").onchange=e=>{const s=e.target.dataset.s;e.target.checked?S.strat.add(s):S.strat.delete(s);r2()};
+// M3 list
+const VAR=v=>v<.5?["var(--gn)","綠"]:v<.8?["var(--yl)","黃"]:["var(--rd)","紅"];
+function r3(){const g=groups(),m=mk(g),L=NOW.filter(m).map(x=>({x,h:hits(g,x)})).sort((a,b)=>b.h-a.h||a.x.var5-b.x.var5);
+$("#sum").textContent=g.length?`共 ${L.length} 檔符合你的條件（${g.map(a=>a.id).join("、")}）。清單依命中策略數排序。`:"尚未設定任何條件。";
+$("#res").innerHTML=`<tr><th>股票</th><th class="n">命中</th><th>共識度</th><th>下檔風險</th></tr>`+L.map(({x,h})=>`<tr class="cl" data-s="${x.s}"><td>${NAME(x.s)}</td><td class="n">${h}/${g.length}</td><td><div class="bar"><i style="width:${100*h/g.length}%"></i></div></td><td><span class="dot" style="background:${VAR(x.var5)[0]}"></span> ${VAR(x.var5)[1]}</td></tr>`).join("")||`<tr><td colspan="4" class="mu">沒有符合的股票，請回上一步放寬條件。</td></tr>`}
+$("#res").onclick=e=>{const t=e.target.closest("tr.cl");if(t){S.sel=+t.dataset.s;go(4)}};
+// M3/M4 detail
+function r4(){if(S.sel==null)return;const x=NOW[S.sel],g=groups(),all=g.flatMap(a=>a.rules);
+const fa=[["rev","近 3 月營收年增率",x.rev.toFixed(1)+"%",x.rev>20],["inst","投信／外資連買",x.inst+" 日",x.inst>=3],["var5","下檔風險排名",x.var5.toFixed(2),x.var5<.8],["pe","本益比",x.pe.toFixed(1)+" 倍",x.pe<=15],
+["roe","ROE",x.roe.toFixed(1)+"%",x.roe>=15],["mom","動能百分位",x.mom.toFixed(2),x.mom>=.7],["ma","均線多頭排列",x.ma?"是":"否",!!x.ma],["mg","10 日融資變動",x.mg.toFixed(1)+"%",x.mg<0],["nh","距 52 週高點",x.nh.toFixed(1)+"%",x.nh<=10],["yld","現金殖利率",x.yld.toFixed(1)+"%",x.yld>=5]].map((f,i)=>({id:"F"+String(i+1).padStart(2,"0"),k:f[0],n:f[1],v:f[2],ok:f[3]}));
+const fid=k=>fa.find(f=>f.k==k).id,hitR=all.filter(r=>rOK(r,x)),miss=all.filter(r=>!rOK(r,x));
+const s1=hitR.length?`你的條件中有 ${hitR.length}／${all.length} 條命中：${hitR.slice(0,2).map(r=>`${F[r.f].n}為 ${(+x[r.f].toFixed(2))}〔${fid(r.f)}〕`).join("，")}。`:"此股在你的條件中沒有命中項目。";
+const s2=`下檔風險排名 ${x.var5.toFixed(2)}〔${fid("var5")}〕，燈號為${VAR(x.var5)[1]}燈。`;
+const s3=`近 3 月營收年增率 ${x.rev.toFixed(1)}%〔${fid("rev")}〕，連買 ${x.inst} 日〔${fid("inst")}〕。`;
+const bu=fa.filter(f=>f.ok).slice(0,3),be=fa.filter(f=>!f.ok).slice(0,3);
+const inv=bu.slice(0,2).map(f=>({factor:f.k,op:f.k=="rev"?"<":f.k=="inst"?"<":f.k=="mom"?"<":">=",value:f.k=="rev"?10:f.k=="inst"?1:f.k=="mom"?.5:.8,label:f.n+"失效門檻"}));
+const same=[];for(let p=0;p<NP;p++)D[p].forEach(y=>{if(g.length&&hits(g,y)>=Math.max(1,hits(g,x)))same.push(y.fwd)});same.sort((a,b)=>a-b);
+const q=a=>same.length?(same[Math.floor((same.length-1)*a)]*100).toFixed(1)+"%":"樣本不足";
+$("#detail").innerHTML=`<div class="box"><h2>${NAME(x.s)}</h2><svg viewBox="0 0 300 60" width="100%" height="60" role="img" aria-label="模擬價格走勢">${spark(x.s)}</svg>
+<h3>三句白話解釋</h3><p>${s1}${s2}${s3}</p><p class="mu">名詞小辭典：營收年增率＝和去年同期比的成長；連買＝法人連續買超日數；下檔風險排名＝壞情況下跌幅的相對高低。</p></div>
+<div class="box"><h2>策略體檢卡</h2><p>訊號階段：命中 ${hits(g,x)}／${g.length} 個策略。下檔風險燈號：<span class="dot" style="background:${VAR(x.var5)[0]}"></span> ${VAR(x.var5)[1]}燈。</p>
+<p>過去同類訊號後一期報酬分布（模擬資料，${same.length} 筆）：10 分位 ${q(.1)}、中位數 ${q(.5)}、90 分位 ${q(.9)}。</p><p class="mu">不顯示目標價、買點與停損價。</p></div>
+<div class="box"><h2>多空論證</h2><div class="cols"><div class="bull"><b>多方</b>${bu.map(f=>`<p>${f.n}為 ${f.v}，符合偏有利的區間〔${f.id}〕</p>`).join("")||"<p class=mu>無有利事實</p>"}</div>
+<div class="bear"><b>空方</b>${be.map(f=>`<p>${f.n}為 ${f.v}，未達偏有利的區間〔${f.id}〕</p>`).join("")||"<p class=mu>無不利事實</p>"}</div></div>
+<h3>裁判：失效條件（機器可讀，日後自動對帳）</h3><pre>${esc(JSON.stringify({logic:"any",rules:inv},null,1))}</pre>
+<p class="mu">示範版的論點由規則模板組成，每句皆綁事實編號；正式版由 LLM 生成並經數字核對、禁語過濾。</p></div><div id="ai"></div>`;aiBlock(fa,x)}
+async function aiBlock(fa,x){if(!CFG.WORKER)return;const facts=fa.map(f=>({id:f.id,name:f.n,value:f.v})),post=p=>fetch(CFG.WORKER+"/"+p,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({facts})}).then(r=>r.json());
+const pts=a=>(a||[]).map(p=>`<p>${esc(p.text)}</p>`).join("")||"<p class=mu>無通過核對的論點</p>";
+try{const [ex,db]=await Promise.all([post("explain"),post("debate")]);let h="<div class=box><h2>AI 生成（已通過數字核對）</h2>";
+if(ex.sentences)h+="<h3>白話解釋</h3>"+pts(ex.sentences);
+if(!db.error)h+=`<div class=cols><div class=bull><b>多方</b>${pts(db.bull)}</div><div class=bear><b>空方</b>${pts(db.bear)}</div></div>`+(db.judge?`<h3>裁判：失效條件</h3>${pts(db.judge.disputes)}<pre>${esc(JSON.stringify(db.judge.invalid_if,null,1))}</pre>`:"");
+$("#ai").innerHTML=h+"</div>"}catch(e){$("#ai").innerHTML="<p class=mu>AI 暫時無法使用，以上為規則版論證。</p>"}}
+function spark(s){const r=rng(s*77+3);let v=100,a=[];for(let i=0;i<60;i++){v*=1+(r()-.48)*.04;a.push(v)}const mn=Math.min(...a),mx=Math.max(...a);
+return `<polyline fill="none" stroke="var(--ac)" stroke-width="2" points="${a.map((y,i)=>`${i*5},${58-(y-mn)/(mx-mn||1)*54}`).join(" ")}"/>`}
+// backtest
+function bt(m,max=20){const r=[];for(let p=0;p<NP;p++){const k=D[p].filter(m).slice(0,max);r.push(k.length?k.reduce((a,x)=>a+x.fwd,0)/k.length-CST:0)}return r}
+const BM=[];const mkBM=()=>{BM.length=0;D.slice(0,NP).forEach(a=>BM.push(a.reduce((s,x)=>s+x.fwd,0)/a.length))};mkBM();
+const cum=a=>{let v=1;return a.map(x=>v*=1+x)};
+const st=a=>{const c=cum(a),n=a.length,ann=Math.pow(c[n-1],12/n)-1;let pk=1,md=0;c.forEach(v=>{pk=Math.max(pk,v);md=Math.min(md,v/pk-1)});const mu=a.reduce((s,x)=>s+x,0)/n,sd=Math.sqrt(a.reduce((s,x)=>s+(x-mu)**2,0)/n)||1;return{ann,md,sh:mu/sd*Math.sqrt(12),oos:Math.pow(c[n-1]/c[23],12/(n-24))-1}};
+function rand(m){const cnt=D.slice(0,NP).map(a=>Math.min(20,a.filter(m).length)),tot=[];const rr=rng(99);
+for(let i=0;i<200;i++){let v=1;for(let p=0;p<NP;p++){const k=cnt[p];if(!k)continue;let s=0;for(let j=0;j<k;j++)s+=D[p][Math.floor(rr()*D[p].length)].fwd;v*=1+s/k-CST}tot.push(v)}return tot}
+function full(m){const a=bt(m),c=cum(a),t=c[c.length-1],rd=rand(m),pc=rd.filter(v=>v<t).length/2;return{a,c,s:st(a),rd,pc,t}}
+// M5
+function r5(){const g=groups();if(!g.length){$("#val").innerHTML="請先設定條件。";return}const m=mk(g),f=full(m),bc=cum(BM),bs=st(BM);S.vcache=f;
+const mn=Math.min(...f.c,...bc,...f.rd),mx=Math.max(...f.c,...bc),X=i=>10+i*(380/(NP-1)),Y=v=>150-(v-mn)/(mx-mn)*140;
+const pl=(c,col)=>`<polyline fill="none" stroke="${col}" stroke-width="2" points="${c.map((v,i)=>X(i)+","+Y(v)).join(" ")}"/>`;
+const bins=Array(10).fill(0),lo=Math.min(...f.rd),hi=Math.max(...f.rd,f.t);f.rd.forEach(v=>bins[Math.min(9,Math.floor((v-lo)/(hi-lo+1e-9)*10))]++);const bm=Math.max(...bins),tb=Math.min(9,Math.floor((f.t-lo)/(hi-lo+1e-9)*10));
+const top=NOW.filter(m).slice(0,5);
+$("#val").innerHTML=`<div class="box"><h2>歷史回測 vs 0050 代理</h2><svg viewBox="0 0 400 160" width="100%" role="img" aria-label="報酬曲線"><rect x="${X(24)}" y="0" width="${X(NP-1)-X(24)}" height="160" fill="var(--ln)" opacity=".5"/>${pl(bc,"var(--mu)")}${pl(f.c,"var(--ac)")}</svg>
+<p class="mu">綠線＝你的組合，灰線＝等權重全體；灰底區為樣本外（最後 12 期，只看不調）。成本已含手續費、證交稅與滑價（每期全換手 ${(CST*100).toFixed(3)}%）。</p>
+<table><tr><th></th><th class="n">年化</th><th class="n">最大回撤</th><th class="n">夏普</th><th class="n">樣本外年化</th></tr>
+<tr><td>你的組合</td><td class="n">${p1(f.s.ann)}</td><td class="n">${p1(f.s.md)}</td><td class="n">${f.s.sh.toFixed(2)}</td><td class="n">${p1(f.s.oos)}</td></tr>
+<tr><td>0050 代理</td><td class="n">${p1(bs.ann)}</td><td class="n">${p1(bs.md)}</td><td class="n">${bs.sh.toFixed(2)}</td><td class="n">${p1(bs.oos)}</td></tr></table></div>
+<div class="box"><h2>隨機基準</h2><svg viewBox="0 0 300 70" width="100%" role="img" aria-label="隨機組合分布">${bins.map((b,i)=>`<rect x="${i*30+2}" y="${60-b/bm*55}" width="26" height="${b/bm*55}" fill="${i==tb?"var(--ac2)":"var(--ln)"}"/>`).join("")}</svg>
+<p>你的組合贏過 <b>${f.pc.toFixed(0)}%</b> 的 200 組隨機組合（同股票池、同持股數）。${f.pc<70?'<span class="warn">未達 70%，與運氣難以區分。</span>':"達 70% 門檻。"}${S.rules.length+S.strat.size>5?'<br><span class="warn">條件偏多，注意過度擬合。</span>':""}</p>
+<p class="mu">資料為模擬產生，結果只示範驗證流程。</p></div>
+<div class="box"><h2>存成預言卡</h2><p class="mu">鎖定今日符合清單前 ${top.length} 檔（最多 5 檔）。</p><input type="text" id="th" placeholder="一句論點，例如：營收加速加上法人認同"><div class="row" style="margin-top:8px"><button class="p" id="sv" ${top.length?"":"disabled"}>鎖定預言卡</button></div></div>`;
+$("#sv").onclick=()=>{const c={t:new Date().toLocaleString("zh-TW"),st:top.map(x=>x.s),th:$("#th").value||"（未填論點）",inv:g.flatMap(a=>a.rules).map(lab),res:null};S.cards.push(c);try{localStorage.setItem("i2a",JSON.stringify(S.cards))}catch(e){}go(7)}}
+const p1=v=>(v*100).toFixed(1)+"%";
+// M6
+function r6(){const g=groups(),rows=LIB.map(l=>({n:l.id+" "+l.name,f:full(x=>sOK(l.rules,x))}));if(g.length)rows.push({n:"★ 你的組合",f:full(mk(g))});const bs=st(BM);
+rows.sort((a,b)=>b.f.s.ann-a.f.s.ann);
+$("#arena").innerHTML=`<tr><th>策略</th><th class="n">年化</th><th class="n">回撤</th><th class="n">夏普</th><th class="n">贏隨機</th></tr>`+rows.map(r=>`<tr><td>${r.n}</td><td class="n">${p1(r.f.s.ann)}</td><td class="n">${p1(r.f.s.md)}</td><td class="n">${r.f.s.sh.toFixed(2)}</td><td class="n">${r.f.pc.toFixed(0)}%${r.f.pc<70?" ⚠":""}</td></tr>`).join("")+`<tr><td>0050 代理</td><td class="n">${p1(bs.ann)}</td><td class="n">${p1(bs.md)}</td><td class="n">${bs.sh.toFixed(2)}</td><td class="n">—</td></tr>`+`<tr><td colspan="5" class="mu">⚠＝贏不過 70% 的隨機組合，與運氣難以區分。</td></tr>`}
+// M5 scorecard
+function r7(){$("#cards").innerHTML=S.cards.length?S.cards.map((c,i)=>`<div class="box"><b>${esc(c.th)}</b><div class="mu">鎖定時間 ${esc(c.t)}｜${c.st.map(NAME).join("、")}</div><div class="mu">失效條件：${c.inv.map(esc).join("；")}</div>
+${c.res?`<p>快轉 20 日：平均超額報酬 <b>${p1(c.res.ex)}</b>。事後檢討：${c.res.ex>0?"論點在這段模擬期間成立，但單期結果不足以證明眼光。":"論點在這段模擬期間未成立，請回頭檢查失效條件是否已出現。"}</p>`:`<button class="g" data-r="${i}">快轉 20 日（模擬）</button>`}</div>`).join("")+(()=>{const d=S.cards.filter(c=>c.res);return d.length?`<p>累積 ${d.length} 張，命中率 ${(100*d.filter(c=>c.res.ex>0).length/d.length).toFixed(0)}%，平均超額報酬 ${p1(d.reduce((a,c)=>a+c.res.ex,0)/d.length)}。</p>`:""})():'<p class="mu">還沒有預言卡。到「驗證」畫面把條件存成一張。</p>'}
+$("#cards").onclick=e=>{const i=e.target.dataset.r;if(i==null)return;if(REAL){e.target.textContent="真實資料需等 20 個交易日到期後結算";return}const c=S.cards[+i],a=c.st.map(s=>NOW[s].fwd),all=NOW.reduce((s,x)=>s+x.fwd,0)/NS;c.res={ex:a.reduce((s,v)=>s+v,0)/a.length-all};r7()}
+(async()=>{try{const r=await fetch(CFG.DATA_URL);if(!r.ok)throw 0;const j=await r.json();
+D.length=0;j.periods.forEach(p=>D.push(p.map((x,i)=>({...x,s:i}))));NOW=j.now.map((x,i)=>({...x,s:i}));D.push(NOW);NAMES=NOW.map(x=>x.name);NP=D.length-1;NS=NOW.length;mkBM();REAL=true;
+$("#src").textContent="資料來源：FinMind 夜間批次，資料日 "+j.asof+"。歷史回測不代表未來績效。"}catch(e){}
+$("#idea").value=EX[0];go(1)})();
+</script></body></html>
